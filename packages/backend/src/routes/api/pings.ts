@@ -90,7 +90,7 @@ export function getRouter(options: {
       const characterName = ctx.session.character.name
       const pingDate = new Date()
       const wrappedText = [
-        '<!channel> PING',
+        `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
         '\n\n',
         formattedText,
         '\n\n',
