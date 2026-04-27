@@ -91,7 +91,7 @@ export function getRouter(options: {
     const characterName = ctx.session.character.name
     const pingDate = new Date()
     const wrappedSlackText = [
-      '<!channel> PING',
+      `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
       formattedText,
       '\n\n',
@@ -100,7 +100,7 @@ export function getRouter(options: {
     ].join('')
 
     const wrappedDiscordText = [
-      '@everyone PING',
+      `@everyone ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
       formattedText,
       '\n\n',

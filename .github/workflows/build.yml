@@ -14,10 +14,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2.3.4
-      - uses: actions/setup-node@v2.4.0
+      - uses: actions/checkout@v6.0.2
+      - uses: actions/setup-node@v6.4.0
         with:
-          node-version: '18'
+          node-version: '24'
           cache: yarn
       - run: yarn install
       - run: yarn workspace @ping-board/common lint
@@ -30,11 +30,11 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') # Only run for Tags
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v6.0.2
 
       - name: Docker Metadata action
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v6.0.0
         with:
           images: ghcr.io/${{ github.repository }}-backend
           tags: |
@@ -46,20 +46,20 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           file: ./packages/backend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.output.labels }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   build-backend:
     runs-on: ubuntu-latest
@@ -68,12 +68,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') || github.base_ref == 'main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v6.0.2
       
       - name: Setup Node.js
-        uses: actions/setup-node@v2.4.0
+        uses: actions/setup-node@v6.4.0
         with:
-          node-version: '18'
+          node-version: '24'
           cache: yarn
 
       - name: Install Dependencies
@@ -90,7 +90,7 @@ jobs:
 
       - name: Upload Release Artifact
         if: startsWith(github.ref, 'refs/tags/') # Only run for Tags
-        uses: actions/upload-artifact@v2.2.4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: backend
           path: |
@@ -112,11 +112,11 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') # Only run for Tags
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v6.0.2
 
       - name: Docker Metadata action
         id: meta
-        uses: docker/metadata-action@v3.5.0
+        uses: docker/metadata-action@v6.0.0
         with:
           images: ghcr.io/${{ github.repository }}-frontend
           tags: |
@@ -128,20 +128,20 @@ jobs:
 
       - name: Login to GitHub Container Registry
         if: github.event_name != 'pull_request'
-        uses: docker/login-action@v1.10.0
+        uses: docker/login-action@v4.1.0
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and Push
-        uses: docker/build-push-action@v2.7.0
+        uses: docker/build-push-action@v7.1.0
         with:
           context: .
           file: ./packages/frontend/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.output.labels }}
+          labels: ${{ steps.meta.outputs.labels }}
 
   build-frontend:
     runs-on: ubuntu-latest
@@ -150,12 +150,12 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') || github.base_ref == 'main'
     steps:
       - name: Checkout
-        uses: actions/checkout@v2.3.4
+        uses: actions/checkout@v6.0.2
 
       - name: Setup Node.js
-        uses: actions/setup-node@v2.4.0
+        uses: actions/setup-node@v6.4.0
         with:
-          node-version: '18'
+          node-version: '24'
           cache: yarn
 
       - name: Install Dependencies
@@ -166,7 +166,7 @@ jobs:
 
       - name: Upload Release Artifact
         if: startsWith(github.ref, 'refs/tags/') # Only run for Tags
-        uses: actions/upload-artifact@v2.2.4
+        uses: actions/upload-artifact@v7.0.1
         with:
           name: frontend
           path: packages/frontend/build
@@ -179,7 +179,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/') # Only run for Tags
     steps:
       - name: Download Backend Build Artifact
-        uses: actions/download-artifact@v2.0.10
+        uses: actions/download-artifact@v8.0.1
         with:
           name: backend
           path: backend
@@ -189,7 +189,7 @@ jobs:
         working-directory: backend
 
       - name: Download Frontend Build Artifact
-        uses: actions/download-artifact@v2.0.10
+        uses: actions/download-artifact@v8.0.1
         with:
           name: frontend
           path: frontend
@@ -199,7 +199,7 @@ jobs:
         working-directory: frontend
 
       - name: Create Release
-        uses: softprops/action-gh-release@v0.1.12
+        uses: softprops/action-gh-release@v3.0.0
         with:
           files: |
             backend.zip
