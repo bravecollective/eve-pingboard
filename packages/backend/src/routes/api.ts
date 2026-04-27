@@ -5,10 +5,12 @@ import { SlackClient } from '../slack/slack-client'
 import { EventsRepository, PingsRepository } from '../database'
 import { getRouter as getEventRouter } from './api/events'
 import { getRouter as getPingsRouter } from './api/pings'
+import {DiscordClient} from "../discord/discord-client";
 
 export function getRouter(options: {
   neucoreClient: NeucoreClient,
   slackClient: SlackClient,
+  discordClient: DiscordClient,
   events: EventsRepository,
   pings: PingsRepository,
 }): Router {
