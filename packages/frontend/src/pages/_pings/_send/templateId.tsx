@@ -12,7 +12,7 @@ import {
 import { useAddPingMutation, useGetPingTemplatesQuery, useGetUserQuery } from '../../../store'
 import { PingInput } from '../../../components/ping-input'
 import { PingTimeInput } from '../../../components/ping-time-input'
-import './:templateId.scss'
+import './templateId.scss'
 
 export function SendPing(): JSX.Element {
   const me = useGetUserQuery()
