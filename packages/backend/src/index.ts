@@ -6,6 +6,7 @@ import { InMemorySessionProvider } from './util/in-memory-session-provider'
 import { UserRoles } from '@ping-board/common'
 import { SlackClient } from './slack/slack-client'
 import { NeucoreGroupCache } from './neucore/neucore-group-cache'
+import { DiscordClient } from './discord/discord-client'
 
 async function main() {
   const eveSsoClient = new EveSSOClient({
@@ -31,6 +32,12 @@ async function main() {
     getFromEnv('SLACK_TOKEN'),
     getOptionalFromEnv('SLACK_API_BASE_URL')
   )
+
+  const discordClient = new DiscordClient({
+    token: getFromEnv('DISCORD_TOKEN'),
+    guildId: getOptionalFromEnv('DISCORD_GUILD_ID'),
+    apiBaseUrl: getOptionalFromEnv('DISCORD_API_BASE_URL'),
+  })
 
   const sessionTimeout = getNumberFromEnv('SESSION_TIMEOUT', 7 * 24 * 60 * 60) * 1000
   const sessionRefreshInterval = getNumberFromEnv('SESSION_REFRESH_INTERVAL', 60) * 1000
@@ -66,6 +73,7 @@ async function main() {
     neucoreClient,
     neucoreGroupsProvider,
     slackClient,
+    discordClient,
     sessionProvider,
     sessionTimeout,
     sessionRefreshInterval,

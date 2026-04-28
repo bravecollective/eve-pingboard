@@ -5,6 +5,7 @@ export interface PingTemplates {
   name: string
   slack_channel_name: string
   slack_channel_id: string
+  discord_channel_id?: string | null
   template: string
   updated_by: string
   updated_at: Date

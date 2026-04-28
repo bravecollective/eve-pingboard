@@ -34,6 +34,20 @@ No matter how you plan on running Pingboard, you at least need to create a new E
 11. Click "Allow"
 12. You are redirected back to the "OAuth & Permissions" page of your App. Write down the "Bot User OAuth Token" (starting with `xoxb-`).
 
+### Create a new Discord Application
+1. Go to https://discord.com/developers/applications
+2. Click the "New Application" button
+3. Enter a name for your application and click "Create"
+4. Click the "Bot" tab on the left
+5. Click "Add Bot" and confirm the dialog
+6. Click the "Copy" button next to the "Token" field to copy the bot's token. You'll need it when configuring the backend server.
+7. Click the "OAuth2" tab on the left
+8. Click "URL Generator" and select the "bot" scope
+9. Select `Administrator` as the required permission for the bot (TODO: figure out minimal permissions required). 
+10. Copy the generated URL and open it in a new tab. You'll be asked to authorize the bot to access your Discord account. 
+11. Copy the generated invite URL and use it to invite the bot to your server. 
+12. In your discord server, right-click on the server name and select the "Copy ID" button.
+
 ### Create a Neucore Application
 1. As an admin, log into your Neucore instance
 2. Click the Plus icon on the Administration → Apps page
@@ -80,6 +94,9 @@ SSO_CLIENT_ID="the Eve application's client ID" \
 SSO_CLIENT_SECRET="the Eve application's secret key" \
 SSO_REDIRECT_URI="the Eve application's callback URL" \
 SLACK_TOKEN="the Slack App's Bot User OAuth Token" \
+DISCORD_TOKEN="Discord bot token" \
+DISCORD_GUILD_ID="Discord guild ID" \
+DISCORD_API_BASE_URL="(optional) Discord API base URL" \
 CORE_URL="the URL where your Neucore instance can be reached by the backend" \
 CORE_APP_ID="the Neucore app's numerical ID" \
 CORE_APP_TOKEN="the Neucore app's secret token" \
@@ -111,6 +128,9 @@ SSO_CLIENT_ID="the Eve application's client ID" \
 SSO_CLIENT_SECRET="the Eve application's secret key" \
 SSO_REDIRECT_URI="the Eve application's callback URL" \
 SLACK_TOKEN="the Slack App's Bot User OAuth Token" \
+DISCORD_TOKEN="Discord bot token" \
+DISCORD_GUILD_ID="Discord guild ID" \
+DISCORD_API_BASE_URL="(optional) Discord API base URL" \
 CORE_URL="the URL where your Neucore instance can be reached by the backend" \
 CORE_APP_ID="the Neucore app's numerical ID" \
 CORE_APP_TOKEN="the Neucore app's secret token" \

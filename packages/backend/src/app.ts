@@ -10,12 +10,14 @@ import { getRouter as getApiRouter } from './routes/api'
 import { getRouter as getAuthRouter } from './routes/auth'
 import { EveSSOClient } from './sso/eve-sso-client'
 import { SlackClient } from './slack/slack-client'
+import { DiscordClient } from './discord/discord-client'
 
 export function getApp(options: {
   eveSsoClient: EveSSOClient,
   neucoreClient: NeucoreClient,
   neucoreGroupsProvider: NeucoreGroupsProvider,
   slackClient: SlackClient,
+  discordClient: DiscordClient,
   sessionProvider: SessionProvider,
   sessionTimeout: number,
   sessionRefreshInterval: number,

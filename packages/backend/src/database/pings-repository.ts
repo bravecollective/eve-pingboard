@@ -131,6 +131,8 @@ export class PingsRepository {
     scheduledFor?: string,
     template: ApiPingTemplate,
     slackMessageId: string,
+    discordMessageId?: string | null,
+    discordChannelName?: string | null,
     characterName: string,
   }): Promise<ApiPing> {
     return await this.knex.transaction(async trx => {
@@ -140,6 +142,8 @@ export class PingsRepository {
         slack_channel_id: options.template.slackChannelId,
         slack_channel_name: options.template.slackChannelName,
         text: options.text,
+        discord_channel_id: options.template.discordChannelId ?? null,
+        discord_channel_name: options.discordChannelName ?? null
       }))[0]
       if (options.template.allowScheduling && options.scheduledFor && options.scheduledTitle) {
         const date = new Date(options.scheduledFor)
@@ -209,6 +213,7 @@ export class PingsRepository {
           name: options.input.name,
           slack_channel_id: options.input.slackChannelId,
           slack_channel_name: options.input.slackChannelName,
+          discord_channel_id: options.input.discordChannelId ?? null,
           template: options.input.template,
           allow_scheduling: !!options.input.allowScheduling,
           updated_at: new Date(),
@@ -252,6 +257,7 @@ export class PingsRepository {
           name: options.template.name,
           slack_channel_id: options.template.slackChannelId,
           slack_channel_name: options.template.slackChannelName,
+          discord_channel_id: options.template.discordChannelId ?? null,
           template: options.template.template,
           allow_scheduling: !!options.template.allowScheduling,
           updated_at: new Date(),
@@ -376,6 +382,7 @@ function rawToPingTemplate(
     allowScheduling: !!template.allow_scheduling,
     updatedAt: template.updated_at.toISOString(),
     updatedBy: template.updated_by,
+    discordChannelId: template.discord_channel_id,
   }
 }
 

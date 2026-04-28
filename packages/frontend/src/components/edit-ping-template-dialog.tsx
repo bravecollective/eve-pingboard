@@ -13,6 +13,7 @@ import { ApiPingTemplate, ApiPingTemplateInput } from '@ping-board/common'
 import {
   useGetAvailableNeucoreGroupsQuery,
   useGetPingChannelsQuery,
+  useGetDiscordChannelsQuery,
 } from '../store'
 import { dayjs } from '../utils/dayjs'
 import './edit-ping-template-dialog.scss'
@@ -50,6 +51,7 @@ export function EditPingTemplateDialog({
   }
 
   const channels = useGetPingChannelsQuery()
+  const discordChannels = useGetDiscordChannelsQuery()
   const neucoreGroups = useGetAvailableNeucoreGroupsQuery()
   const remainingNeucoreGroups = (neucoreGroups.data?.neucoreGroups ?? [])
     .filter(g => !editedTemplate.allowedNeucoreGroups.includes(g.name))
@@ -70,6 +72,9 @@ export function EditPingTemplateDialog({
 
   const handleSlackChannelChange = (e: ChangeEvent<HTMLSelectElement>) =>
     setEditedTemplate(t => ({ ...t, slackChannelId: e.target.value }))
+
+  const handleDiscordChannelChange = (e: ChangeEvent<HTMLSelectElement>) =>
+    setEditedTemplate(t => ({ ...t, discordChannelId: e.target.value || null }))
 
   const handleAllowSchedulingChange = () =>
     setTemplateField('allowScheduling', !editedTemplate.allowScheduling)
@@ -127,6 +132,24 @@ export function EditPingTemplateDialog({
                   : <option value="">(Please Select)</option>
                 )}
                 {!channels.isLoading && channels.data?.channels.map(c => (
+                  <option key={c.id} value={c.id}>{c.name}</option>
+                ))}
+              </Form.Select>
+            </Form.Group>
+
+            <Form.Group as={Col} controlId="discordChannel" xs={12} sm={6} className="mb-3">
+              <Form.Label>Targeted Discord Channel (Optional)</Form.Label>
+              <Form.Select
+                value={editedTemplate.discordChannelId ?? ''}
+                onChange={handleDiscordChannelChange}
+              >
+                {discordChannels.isLoading &&
+                  <option value="">Loading&hellip;</option>
+                }
+                {!discordChannels.isLoading && (
+                  <option value="">(None)</option>
+                )}
+                {!discordChannels.isLoading && discordChannels.data?.channels.map(c => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </Form.Select>
@@ -271,6 +294,7 @@ function getDefaultEditedTemplate(): ApiPingTemplateInput {
   return {
     name: '',
     slackChannelId: '',
+    discordChannelId: null,
     template: '',
     allowedNeucoreGroups: [],
     allowScheduling: false,

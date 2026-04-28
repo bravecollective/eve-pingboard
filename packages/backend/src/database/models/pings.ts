@@ -6,6 +6,9 @@ export interface Pings {
   slack_channel_name: string
   slack_channel_id: string
   slack_message_id?: string | null
+  discord_channel_name?: string | null
+  discord_channel_id?: string | null
+  discord_message_id?: string | null
   author: string
   sent_at: Date
 }

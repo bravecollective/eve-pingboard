@@ -21,10 +21,12 @@ import { NeucoreClient } from '../../neucore'
 import { dayjs } from '../../util/dayjs'
 import { PingsRepository, UnknownTemplateError } from '../../database'
 import { extractDateQueryParam, extractQueryParam } from '../../util/extract-query-param'
+import { DiscordClient, DiscordRequestFailedError } from '../../discord/discord-client'
 
 export function getRouter(options: {
   neucoreClient: NeucoreClient,
   slackClient: SlackClient,
+  discordClient: DiscordClient,
   pings: PingsRepository,
 }): Router {
   const router = new Router()
@@ -86,40 +88,69 @@ export function getRouter(options: {
       ping.text
     )
 
+    const characterName = ctx.session.character.name
+    const pingDate = new Date()
+    const wrappedSlackText = [
+      `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
+      '\n\n',
+      formattedText,
+      '\n\n',
+      `> ${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} `,
+      `- *${characterName}* to #${template.slackChannelName}`,
+    ].join('')
+
+    const wrappedDiscordText = [
+      `@everyone ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
+      '\n\n',
+      formattedText,
+      '\n\n',
+      `${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} - ${characterName}`,
+    ].join('')
+
+    let slackMessageId: string | null = null
+    let discordMessageId: string | null = null
+    let discordChannelName: string | null = null
+
     try {
-      const characterName = ctx.session.character.name
-      const pingDate = new Date()
-      const wrappedText = [
-        `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
-        '\n\n',
-        formattedText,
-        '\n\n',
-        `> ${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} `,
-        `- *${characterName}* to #${template.slackChannelName}`,
-      ].join('')
-      const slackMessageId = await options.slackClient.postMessage(
-        template.slackChannelId,
-        wrappedText
+      slackMessageId = await options.slackClient.postMessage(
+          template.slackChannelId,
+          wrappedSlackText
       )
+
+      if (template.discordChannelId) {
+        discordChannelName = await options.discordClient.getChannelName(template.discordChannelId)
+        discordMessageId = await options.discordClient.postMessage(
+            template.discordChannelId,
+            wrappedDiscordText
+        )
+      }
+
       try {
         const p = await options.pings.addPing({
-          text: wrappedText,
+          text: wrappedSlackText,
           characterName,
           template,
           scheduledTitle: ping.scheduledTitle,
           scheduledFor: ping.scheduledFor,
-          slackMessageId,
+          slackMessageId: slackMessageId,
+          discordMessageId,
+          discordChannelName,
         })
         ctx.status = 201
         ctx.body = p
       } catch (error) {
         // Storing the ping in the database failed, let's delete the corresponding slack message
         // and pretend we never event sent a ping in the first place.
-        await options.slackClient.deleteMessage(template.slackChannelId, slackMessageId)
+        if (slackMessageId) {
+          await options.slackClient.deleteMessage(template.slackChannelId, slackMessageId)
+        }
+        if (template.discordChannelId && discordMessageId) {
+          await options.discordClient.deleteMessage(template.discordChannelId, discordMessageId)
+        }
         throw error
       }
     } catch (error) {
-      if (error instanceof SlackRequestFailedError) {
+      if (error instanceof SlackRequestFailedError || error instanceof DiscordRequestFailedError) {
         throw new InternalServerError(error.message)
       }
       throw error
@@ -157,6 +188,11 @@ export function getRouter(options: {
       ),
     }
     ctx.body = response
+  })
+
+  router.get('/discord-channels', userRoles.requireOneOf(UserRoles.PING_TEMPLATES_WRITE), async ctx => {
+    const channels = await options.discordClient.getChannels()
+    ctx.body = { channels }
   })
 
   router.get(
@@ -348,6 +384,7 @@ async function validatePingInput(
 const templateSchema = yup.object().noUnknown(true).shape({
   name: yup.string().required().min(1),
   slackChannelId: yup.string().min(1),
+  discordChannelId: yup.string().min(1).nullable().notRequired(),
   template: yup.string().min(0),
   allowedNeucoreGroups: yup.array(yup.string().min(1)).min(0),
   allowScheduling: yup.boolean().notRequired(),

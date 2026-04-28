@@ -1,5 +1,6 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/dist/query/react'
 import {
+  ApiDiscordChannelsResponse,
   ApiEventEntry,
   ApiEventEntryInput,
   ApiEventsResponse,
@@ -26,6 +27,7 @@ export const apiSlice = createApi({
     'Ping',
     'PingTemplate',
     'PingChannel',
+    'DiscordChannel',
     'NeucoreGroup',
     'PingViewPermission',
   ],
@@ -79,6 +81,12 @@ export const apiSlice = createApi({
       providesTags: result => result && result.channels.length > 0
         ? result.channels.map(({ id }) => ({ type: 'PingChannel', id }))
         : ['PingChannel'],
+    }),
+    getDiscordChannels: builder.query<ApiDiscordChannelsResponse, void>({
+      query: () => ({ url: 'api/pings/discord-channels' }),
+      providesTags: result => result && result.channels.length > 0
+        ? result.channels.map(({ id }) => ({ type: 'DiscordChannel', id }))
+        : ['DiscordChannel'],
     }),
     getAvailableNeucoreGroups: builder.query<ApiNeucoreGroupsResponse, void>({
       query: () => ({ url: 'api/pings/neucore-groups' }),
@@ -148,6 +156,7 @@ export const {
   useGetPingsQuery,
   useAddPingMutation,
   useGetPingChannelsQuery,
+  useGetDiscordChannelsQuery,
   useGetAvailableNeucoreGroupsQuery,
   useGetPingTemplatesQuery,
   useAddPingTemplateMutation,
