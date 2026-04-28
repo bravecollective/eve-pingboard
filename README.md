@@ -43,7 +43,7 @@ No matter how you plan on running Pingboard, you at least need to create a new E
 6. Click the "Copy" button next to the "Token" field to copy the bot's token. You'll need it when configuring the backend server.
 7. Click the "OAuth2" tab on the left
 8. Click "URL Generator" and select the "bot" scope
-9. Select `Administrator` as the required permission for the bot (TODO: figure out minimal permissions required). 
+9. Select `View Channels`, `Send Messages`, `Manage Messages`, `Embed Links`, `Read Message History`, `Mention Everyone`, and `Bypass Slowmode` as the required permissions for the bot. 
 10. Copy the generated URL and open it in a new tab. You'll be asked to authorize the bot to access your Discord account. 
 11. Copy the generated invite URL and use it to invite the bot to your server. 
 12. In your discord server, right-click on the server name and select the "Copy ID" button.
