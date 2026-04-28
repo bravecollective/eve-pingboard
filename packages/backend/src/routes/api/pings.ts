@@ -66,7 +66,7 @@ export function getRouter(options: {
       throw new Forbidden('you are not permitted to ping using this template')
     }
 
-    const placeholders: { placeholder: string, value: string | (() => string) }[] = [
+    const slackPlaceholders: { placeholder: string, value: string | (() => string) }[] = [
       { placeholder: 'me', value: ctx.session.character?.name ?? '' },
       { placeholder: 'title', value: () => ping.scheduledTitle ?? '' },
       { placeholder: 'time', value: () => {
@@ -80,7 +80,20 @@ export function getRouter(options: {
         )
       } },
     ]
-    const formattedText = placeholders.reduce(
+
+    const discordPlaceholders: { placeholder: string, value: string | (() => string) }[] = [
+      { placeholder: 'me', value: ctx.session.character?.name ?? '' },
+      { placeholder: 'title', value: () => ping.scheduledTitle ?? '' },
+      { placeholder: 'time', value: () => {
+          if (!ping.scheduledFor) {
+            return ''
+          }
+          const timestamp = dayjs.utc(ping.scheduledFor).unix()
+          return `<t:${timestamp}:f> (<t:${timestamp}:R>)`
+        } },
+    ]
+
+    const slackFormattedText = slackPlaceholders.reduce(
       (text, { placeholder, value }) => text.replace(
         new RegExp(`{{${placeholder}}}`, 'igm'),
         () => typeof value === 'function' ? value() : value
@@ -88,12 +101,20 @@ export function getRouter(options: {
       ping.text
     )
 
+    const discordFormattedText = discordPlaceholders.reduce(
+        (text, { placeholder, value }) => text.replace(
+            new RegExp(`{{${placeholder}}}`, 'igm'),
+            () => typeof value === 'function' ? value() : value
+        ),
+        ping.text
+    )
+
     const characterName = ctx.session.character.name
     const pingDate = new Date()
     const wrappedSlackText = [
       `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
-      formattedText,
+      slackFormattedText,
       '\n\n',
       `> ${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} `,
       `- *${characterName}* to #${template.slackChannelName}`,
@@ -102,7 +123,7 @@ export function getRouter(options: {
     const wrappedDiscordText = [
       `@everyone ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
-      formattedText,
+      discordFormattedText,
       '\n\n',
       `${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} - ${characterName}`,
     ].join('')
