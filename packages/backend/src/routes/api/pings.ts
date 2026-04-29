@@ -16,7 +16,7 @@ import {
   ApiScheduledPingsResponse,
 } from '@ping-board/common'
 import { UserRoles, userRoles } from '../../middleware/user-roles'
-import { SlackClient, slackLink, SlackRequestFailedError } from '../../slack/slack-client'
+import {SlackClient, SlackRequestFailedError, slackTimestamp} from '../../slack/slack-client'
 import { NeucoreClient } from '../../neucore'
 import { dayjs } from '../../util/dayjs'
 import { PingsRepository, UnknownTemplateError } from '../../database'
@@ -74,10 +74,7 @@ export function getRouter(options: {
           return ''
         }
         const time = dayjs.utc(ping.scheduledFor)
-        return slackLink(
-          `https://time.nakamura-labs.com/#${time.unix()}`,
-          `${time.format('YYYY-MM-DD HH:mm')} (${time.fromNow()})`
-        )
+        return slackTimestamp(time.unix())
       } },
     ]
 
@@ -89,7 +86,8 @@ export function getRouter(options: {
             return ''
           }
           const timestamp = dayjs.utc(ping.scheduledFor).unix()
-          return `<t:${timestamp}:f> (<t:${timestamp}:R>)`
+          // eslint-disable-next-line max-len
+          return `[<t:${timestamp}:f> (<t:${timestamp}:R>)](https://time.nakamura-labs.com/#${timestamp})`
         } },
     ]
 

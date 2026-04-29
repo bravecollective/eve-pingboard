@@ -1,6 +1,7 @@
 import { LogLevel, WebClient } from '@slack/web-api'
 import { Channel } from '@slack/web-api/dist/response/ConversationsListResponse'
 import { InMemoryTTLCache } from '../util/in-memory-ttl-cache'
+import {dayjs} from '../util/dayjs'
 
 export class InvalidChannelIdError extends Error {
   constructor(id: string) {
@@ -97,4 +98,9 @@ export class SlackClient {
 
 export function slackLink(href: string, title: string): string {
   return `<${href.replace(/\|/g, '%7C')}|${title.replace(/>/g, '\\>')}>`
+}
+
+export function slackTimestamp(timestamp: number): string {
+  // eslint-disable-next-line max-len
+  return `<!date^${timestamp}^{date} {time} ({ago})^https://time.nakamura-labs.com/#${timestamp}|${dayjs.utc(timestamp).format('YYYY-MM-DD HH:mm:ss')}>`
 }
