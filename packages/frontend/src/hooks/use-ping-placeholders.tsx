@@ -44,8 +44,8 @@ export function usePingPlaceholders(template: ApiPingTemplate | null, options: {
             />) followed by a countdown.
             The date-time is converted to the local timezone of whoever&apos;s viewing it,
             and the countdown updates automatically.
-            Both link to a
-            <a href="https://time.nakamura-labs.com/" target="_blank" rel="noreferrer">
+            Both link to
+            a <a href="https://time.nakamura-labs.com/" target="_blank" rel="noreferrer">
               Nakamura time link
             </a>
           </>),
