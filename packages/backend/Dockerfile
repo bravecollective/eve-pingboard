@@ -1,5 +1,5 @@
 # Image that is only used to build the application
-FROM node:20-alpine as build
+FROM node:24-alpine as build
 WORKDIR /app
 # Copy files in the order of least changed to most often changed to reduce
 # number of layers to build when changing something
@@ -23,7 +23,7 @@ RUN yarn workspace @ping-board/backend build
 
 
 # This is the actual application image
-FROM node:20-alpine
+FROM node:24-alpine
 RUN adduser -D app
 WORKDIR /app
 RUN chown app /app
