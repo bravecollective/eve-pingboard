@@ -16,7 +16,7 @@ import {
   ApiScheduledPingsResponse,
 } from '@ping-board/common'
 import { UserRoles, userRoles } from '../../middleware/user-roles'
-import { SlackClient, slackLink, SlackRequestFailedError } from '../../slack/slack-client'
+import {SlackClient, SlackRequestFailedError, slackTimestamp} from '../../slack/slack-client'
 import { NeucoreClient } from '../../neucore'
 import { dayjs } from '../../util/dayjs'
 import { PingsRepository, UnknownTemplateError } from '../../database'
@@ -66,7 +66,7 @@ export function getRouter(options: {
       throw new Forbidden('you are not permitted to ping using this template')
     }
 
-    const placeholders: { placeholder: string, value: string | (() => string) }[] = [
+    const slackPlaceholders: { placeholder: string, value: string | (() => string) }[] = [
       { placeholder: 'me', value: ctx.session.character?.name ?? '' },
       { placeholder: 'title', value: () => ping.scheduledTitle ?? '' },
       { placeholder: 'time', value: () => {
@@ -74,13 +74,24 @@ export function getRouter(options: {
           return ''
         }
         const time = dayjs.utc(ping.scheduledFor)
-        return slackLink(
-          `https://time.nakamura-labs.com/#${time.unix()}`,
-          `${time.format('YYYY-MM-DD HH:mm')} (${time.fromNow()})`
-        )
+        return slackTimestamp(time.unix())
       } },
     ]
-    const formattedText = placeholders.reduce(
+
+    const discordPlaceholders: { placeholder: string, value: string | (() => string) }[] = [
+      { placeholder: 'me', value: ctx.session.character?.name ?? '' },
+      { placeholder: 'title', value: () => ping.scheduledTitle ?? '' },
+      { placeholder: 'time', value: () => {
+          if (!ping.scheduledFor) {
+            return ''
+          }
+          const timestamp = dayjs.utc(ping.scheduledFor).unix()
+          // eslint-disable-next-line max-len
+          return `[<t:${timestamp}:f> (<t:${timestamp}:R>)](https://time.nakamura-labs.com/#${timestamp})`
+        } },
+    ]
+
+    const slackFormattedText = slackPlaceholders.reduce(
       (text, { placeholder, value }) => text.replace(
         new RegExp(`{{${placeholder}}}`, 'igm'),
         () => typeof value === 'function' ? value() : value
@@ -88,12 +99,20 @@ export function getRouter(options: {
       ping.text
     )
 
+    const discordFormattedText = discordPlaceholders.reduce(
+        (text, { placeholder, value }) => text.replace(
+            new RegExp(`{{${placeholder}}}`, 'igm'),
+            () => typeof value === 'function' ? value() : value
+        ),
+        ping.text
+    )
+
     const characterName = ctx.session.character.name
     const pingDate = new Date()
     const wrappedSlackText = [
       `<!channel> ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
-      formattedText,
+      slackFormattedText,
       '\n\n',
       `> ${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} `,
       `- *${characterName}* to #${template.slackChannelName}`,
@@ -102,7 +121,7 @@ export function getRouter(options: {
     const wrappedDiscordText = [
       `@everyone ${!ping.scheduledFor ? 'PING' : '### PRE-PING ###'}`,
       '\n\n',
-      formattedText,
+      discordFormattedText,
       '\n\n',
       `${dayjs(pingDate).format('YYYY-MM-DD HH:mm:ss')} - ${characterName}`,
     ].join('')
