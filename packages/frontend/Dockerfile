@@ -1,5 +1,5 @@
 # Image that is only used to build the React application
-FROM node:24-alpine as build
+FROM node:20-alpine as build
 WORKDIR /app
 # Copy files in the order of least changed to most often changed to reduce
 # number of layers to build when changing something
