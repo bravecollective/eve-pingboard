@@ -37,14 +37,17 @@ export function usePingPlaceholders(template: ApiPingTemplate | null, options: {
         placeholders.push({
           placeholder: 'time',
           description: (<>
-            a <a href="https://time.nakamura-labs.com/" target="_blank" rel="noreferrer">
-              Nakamura time link
-            </a> for the scheduled time and date
-            (<Time
+            the scheduled date and time (<Time
               time={toAbsoluteTime(options.calendarTime)}
               asLink
               format={'YYYY-MM-DD HH:mm'}
-            />)
+            />) followed by a countdown.
+            The date-time is converted to the local timezone of whoever's viewing it,
+            and the countdown updates automatically.
+            Both link to a 
+            <a href="https://time.nakamura-labs.com/" target="_blank" rel="noreferrer">
+              Nakamura time link
+            </a>
           </>),
         })
       }
