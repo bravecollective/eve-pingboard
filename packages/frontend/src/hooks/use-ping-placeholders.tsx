@@ -42,7 +42,7 @@ export function usePingPlaceholders(template: ApiPingTemplate | null, options: {
               asLink
               format={'YYYY-MM-DD HH:mm'}
             />) followed by a countdown.
-            The date-time is converted to the local timezone of whoever's viewing it,
+            The date-time is converted to the local timezone of whoever&apos;s viewing it,
             and the countdown updates automatically.
             Both link to a 
             <a href="https://time.nakamura-labs.com/" target="_blank" rel="noreferrer">
