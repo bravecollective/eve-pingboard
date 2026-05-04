@@ -95,6 +95,23 @@ SLACK_TOKEN
 #SLACK_API_BASE_URL
 ```
 
+### Discord configuration
+as obtained via https://discord.com/developers/applications
+```sh
+# Discord Bot Token
+DISCORD_TOKEN
+# The ID of the Discord server to post events to (remains as backward compatibility for single server setups)
+DISCORD_GUILD_ID
+# A list of space-separated Discord server IDs to post events to
+DISCORD_GUILD_IDS
+# Does not need to be set, but can be used to override the default Discord API base URL
+DISCORD_API_BASE_URL
+```
+**Note**: Discord guild IDs can be obtained by rightclicking a server icon in Discord with developer mode enabled
+and selecting "Copy Server ID". \
+Both the `DISCORD_GUILD_ID` and `DISCORD_GUILD_IDS` are combined and deduplicated to form the final server list.
+
+
 ### Neucore configuration
 ```sh
 # The base URL of the Neucore API to use (e.g. https://account.bravecollective.com/api)
