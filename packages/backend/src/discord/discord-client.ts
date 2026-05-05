@@ -13,14 +13,38 @@ type DiscordChannel = {
     type?: number
 }
 
+type DiscordGuild = {
+    id: string
+    name?: string
+}
+
+type DiscordClientOptions = {
+    token: string
+    guildId?: string
+    guildIds?: string[]
+    apiBaseUrl?: string
+}
+
+type DiscordChannelListItem = {
+    id: string
+    name: string
+    guildId: string
+    guildName: string
+}
+
 export class DiscordClient {
     private readonly token: string
     private readonly apiBaseUrl: string
-    private readonly guildId?: string
+    private readonly guildIds: string[]
 
-    constructor(options: { token: string, guildId?: string, apiBaseUrl?: string }) {
+    constructor(options: DiscordClientOptions) {
         this.token = options.token
-        this.guildId = options.guildId
+        this.guildIds = [
+            ...new Set([
+                ...(options.guildIds ?? []),
+                ...(options.guildId ? [options.guildId] : []),
+            ]),
+        ]
         this.apiBaseUrl = options.apiBaseUrl ?? 'https://discord.com/api/v10'
     }
 
@@ -37,7 +61,9 @@ export class DiscordClient {
 
         if (!response.ok) {
             const text = await response.text().catch(() => '')
-            throw new DiscordRequestFailedError(`${response.status} ${response.statusText}${text ? ` - ${text}` : ''}`)
+            throw new DiscordRequestFailedError(
+                `${response.status} ${response.statusText}${text ? ` - ${text}` : ''}`
+            )
         }
 
         // Apparently discord likes to return 204 sometimes, sure, why not
@@ -48,24 +74,56 @@ export class DiscordClient {
         return await response.json() as T
     }
 
-    private channelCache = new InMemoryTTLCache<void, DiscordChannel[]>({
+    private channelCache = new InMemoryTTLCache<void, DiscordChannelListItem[]>({
         defaultTTL: 30 * 60 * 1000,
         get: async () => {
-            if (!this.guildId) {
+            if (this.guildIds.length === 0) {
                 return { value: [] }
             }
 
-            const channels = await this.request<DiscordChannel[]>(`/guilds/${this.guildId}/channels`)
-            // 0 = regular channel, 5 = special announcement-type channel
-            const filtered = channels.filter(c => (c.type === 0 || c.type === 5) && typeof c.id === 'string')
-            const sorted = filtered.sort((a, b) => (a.name ?? '').localeCompare(b.name ?? ''))
+            const channelsByGuild = await Promise.all(this.guildIds.map(async guildId => {
+                const [guild, channels] = await Promise.all([
+                    this.request<DiscordGuild>(`/guilds/${guildId}`),
+                    this.request<DiscordChannel[]>(`/guilds/${guildId}/channels`),
+                ])
+
+                const guildName = guild.name ?? guildId
+
+                // 0 = regular channel, 5 = special announcement-type channel
+                return channels
+                    .filter(c =>
+                        (c.type === 0 || c.type === 5)
+                        && typeof c.id === 'string'
+                        && typeof c.name === 'string')
+                    .map(c => ({
+                        id: c.id,
+                        name: c.name as string,
+                        guildId,
+                        guildName,
+                    }))
+            }))
+
+            const sorted = channelsByGuild
+                .flat()
+                .sort((a, b) => {
+                    const guildCompare: number= a.guildName.localeCompare(b.guildName)
+                    if (guildCompare !== 0) {
+                        return guildCompare
+                    }
+
+                    return a.name.localeCompare(b.name)
+                })
+
             return { value: sorted }
         },
     })
 
     async getChannels(): Promise<{ id: string, name: string }[]> {
         const channels = await this.channelCache.get()
-        return channels.flatMap(c => (typeof c.name === 'string' ? [{ id: c.id, name: c.name }] : []))
+        return channels.map(c => ({
+            id: c.id,
+            name: `${c.guildName} / #${c.name}`,
+        }))
     }
 
     private channelNameCache = new InMemoryTTLCache<string, string>({
