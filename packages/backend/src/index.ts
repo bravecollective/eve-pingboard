@@ -35,6 +35,7 @@ async function main() {
 
   const discordClient = new DiscordClient({
     token: getFromEnv('DISCORD_TOKEN'),
+    guildIds: getOptionalFromEnv('DISCORD_GUILD_IDS')?.split(' ').filter(Boolean),
     guildId: getOptionalFromEnv('DISCORD_GUILD_ID'),
     apiBaseUrl: getOptionalFromEnv('DISCORD_API_BASE_URL'),
   })

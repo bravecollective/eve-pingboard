@@ -136,25 +136,29 @@ export function EditPingTemplateDialog({
                 ))}
               </Form.Select>
             </Form.Group>
-
             <Form.Group as={Col} controlId="discordChannel" xs={12} sm={6} className="mb-3">
               <Form.Label>Targeted Discord Channel (Optional)</Form.Label>
               <Form.Select
-                value={editedTemplate.discordChannelId ?? ''}
-                onChange={handleDiscordChannelChange}
+                  value={editedTemplate.discordChannelId ?? ''}
+                  onChange={handleDiscordChannelChange}
               >
                 {discordChannels.isLoading &&
-                  <option value="">Loading&hellip;</option>
+                    <option value="">Loading&hellip;</option>
                 }
                 {!discordChannels.isLoading && (
-                  <option value="">(None)</option>
+                    <option value="">(None)</option>
                 )}
+                {!discordChannels.isLoading &&
+                    editedTemplate.discordChannelId &&
+                    !discordChannels.data?.channels
+                        .some(c => c.id === editedTemplate.discordChannelId) && (
+                        <option value={editedTemplate.discordChannelId}>(Configured)</option>
+                    )}
                 {!discordChannels.isLoading && discordChannels.data?.channels.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
+                    <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </Form.Select>
             </Form.Group>
-
             <Form.Group as={Col} controlId="allowScheduling" xs={12} className="mb-3">
               <Form.Check
                 checked={!!editedTemplate.allowScheduling}
