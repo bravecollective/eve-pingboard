@@ -38,7 +38,7 @@ export function ManagePingViewAccess(): JSX.Element {
   const channels = useGetPingChannelsQuery()
   const remainingChannels = (channels.data?.channels ?? [])
     .filter(c => (selectedGroup && viewPermissions.get(selectedGroup) || [])
-      .every(cc => cc.slackChannelName !== c.name)
+      .every(cc => cc.slackChannelId !== c.id)
     )
 
   const [
@@ -156,7 +156,9 @@ export function ManagePingViewAccess(): JSX.Element {
                 )}
                 {viewPermissions.get(selectedGroup)?.map(p => (
                   <tr key={p.slackChannelId}>
-                    <td className="align-middle">{p.slackChannelName}</td>
+                    <td className="align-middle">
+                      {p.slackChannelName || `Unavailable channel (${p.slackChannelId})`}
+                    </td>
                     <td>
                       <Button
                         size="sm"
