@@ -338,9 +338,15 @@ export function getRouter(options: {
         throw new BadRequest('invalid neucore group')
       }
       const input = await validateViewPermissionsByGroupInput(ctx.request.body)
-      const slackChannels = await options.slackClient.getChannels()
+      const [slackChannels, existingPermissions] = await Promise.all([
+        options.slackClient.getChannels(),
+        options.pings.getPingViewPermissions(),
+      ])
+      // Updates replace the entire group list, so retain unavailable channels already assigned
+      // to this group while rejecting new unavailable channel IDs.
       const invalidSlackChannels = input.allowedSlackChannelIds
-        .filter(c => !slackChannels.some(sc => sc.id === c))
+        .filter(c => !slackChannels.some(sc => sc.id === c) &&
+          !existingPermissions.some(p => p.neucoreGroup === neucoreGroup && p.slackChannelId === c))
       if (invalidSlackChannels.length > 0) {
         throw new BadRequest(`invalid slack channel id: ${invalidSlackChannels.join(', ')}`)
       }
